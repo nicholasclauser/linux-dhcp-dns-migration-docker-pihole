@@ -14,6 +14,40 @@ This project moves the responsibility for assigning IP addresses and looking up 
     * **DHCP:** The embedded FTL/dnsmasq server.
 * **Upstream DNS:** Cloudflare (1.1.1.1).
 
+## Network Topology
+```mermaid
+graph TB
+    subgraph Internet ["☁ Internet"]
+        CF[Cloudflare DNS<br/>1.1.1.1]
+    end
+    
+    subgraph HomeNet ["Home Network - 192.168.2.0/24"]
+        GW[Bell Giga Hub<br/>192.168.2.1<br/>Gateway & Router]
+        
+        subgraph LinuxHost ["Linux Host - 192.168.2.199"]
+            PH[Pi-hole Container<br/>Docker Host Networking<br/>DNS Server + DHCP Server]
+        end
+        
+        CLIENTS[Client Devices<br/>Laptops • Phones • IoT<br/>DHCP Range: .10 - .150]
+    end
+    
+    CLIENTS -->|DHCP Requests<br/>UDP 67/68| PH
+    CLIENTS -->|DNS Queries<br/>UDP 53| PH
+    PH -->|Upstream DNS| CF
+    PH -->|Default Gateway| GW
+    GW -->|WAN| CF
+    
+    classDef internet fill:#1a73e8,stroke:#0d47a1,stroke-width:2px,color:#fff
+    classDef gateway fill:#ea4335,stroke:#b71c1c,stroke-width:2px,color:#fff
+    classDef server fill:#34a853,stroke:#1b5e20,stroke-width:2px,color:#fff
+    classDef clients fill:#fbbc04,stroke:#f57f17,stroke-width:2px,color:#000
+    
+    class CF internet
+    class GW gateway
+    class PH server
+    class CLIENTS clients
+```
+
 ## The Problem
 **Observation:** When I set the Bell Giga Hub's "Primary DNS" to my local Pi-hole server (`192.168.2.199`), the server immediately lost its internet connection.
 
