@@ -1,0 +1,25 @@
+version: "3.8"
+
+# Based on the official Pi-hole Docker documentation
+# https://github.com/pi-hole/docker-pi-hole
+
+services:
+  pihole:
+    container_name: pihole
+    # PINNED VERSION: Prevents breaking changes from 'latest' tag.
+    # Check Docker Hub for the current stable date-tag.
+    image: pihole/pihole:2024.02.2
+    network_mode: "host" # Required for DHCP to hear broadcast packets
+    environment:
+      TZ: 'America/Toronto'
+      # Secrets loaded from .env file
+      # Note: This variable initializes the password on first run. 
+      # Subsequent changes may require updating local config files.
+      WEBPASSWORD: ${PIHOLE_PASSWORD}
+      FTLCONF_LOCAL_IPV4: ${HOST_IP}
+    volumes:
+      - './etc-pihole:/etc/pihole'
+      - './etc-dnsmasq.d:/etc/dnsmasq.d'
+    cap_add:
+      - NET_ADMIN # Required for DHCP packet manipulation
+    restart: unless-stopped
